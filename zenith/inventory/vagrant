@@ -1,0 +1,13 @@
+[compute:vars]
+ansible_user=vagrant
+
+[safekeepers:vars]
+ansible_user=vagrant
+
+[safekeepers]
+192.168.56.200 private_ip=192.168.56.200
+192.168.56.201 private_ip=192.168.56.201
+192.168.56.202 private_ip=192.168.56.202
+
+[compute]
+192.168.56.210
