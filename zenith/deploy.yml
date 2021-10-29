@@ -18,6 +18,7 @@
       - openssl
       - libseccomp-dev
       - gnupg
+      - tmux
       # - pkg-config # rust openssl-sys needs pkg-config
       # - libclang-dev # rust rocksdb
       # - clang # rust rocksdb
@@ -25,7 +26,7 @@
 
   # Requires gpg which is installed previously
   - name: Include common tasks
-    import_tasks: ../common/common.yml
+    import_tasks: ../common/deploy.yml
 
   - name: Extract Zenith binaries from zenith_install.tar.gz into /usr/local
     ansible.builtin.unarchive:
@@ -35,117 +36,21 @@
     - binaries
     become: true
 
+
 - hosts: safekeepers
 
   tasks:
+  - name: Import safekeepers tasks
+    import_tasks: ../safekeepers/deploy.yml
 
-  - name: Create storage directory
-    ansible.builtin.file:
-      path: /storage
-      state: directory
-      mode: "0777"
-    become: true
+  
+- hosts: compute
 
-  # XXX: amazon.aws.ec2 ignores `device_name: /dev/sdb` and puts storage
-  # to /dev/xvdb by default.
-  - name: Create a ext4 filesystem on EBS volume
-    community.general.filesystem:
-      fstype: ext4
-      # dev: /dev/sdb
-      dev: /dev/xvdb
-    tags:
-    - aws-specific
-    become: true
+  vars:
+    pgdata_dir: /var/db/postgres/compute
+    pgdata_env:
+      PGDATA: /var/db/postgres/compute
 
-  - name: Mount EBS storage
-    ansible.posix.mount:
-      path: /storage
-      src: /dev/xvdb
-      fstype: ext4
-      boot: yes
-      state: mounted
-    tags:
-    - aws-specific
-    become: true
-
-  - name: Create safekeeper group
-    group:
-      name: safekeeper
-      state: present
-    become: true
-
-  - name: Create safekeeper user
-    user:
-      name: safekeeper
-      groups: safekeeper
-      append: yes
-      state: present
-      home: /storage/safekeeper
-    become: true
-
-  - name: Create safekeeper data directory
-    ansible.builtin.file:
-      path: /storage/safekeeper/data
-      state: directory
-      mode: "0755"
-      owner: safekeeper
-      group: safekeeper
-    become: true
-
-  - name: Limit size of journald logs
-    lineinfile:
-      path: /etc/systemd/journald.conf
-      insertafter: '[Journal]'
-      line: 'SystemMaxUse=512M'
-    become: true
-
-  - name: Restart systemd-journald
-    ansible.builtin.systemd:
-      daemon_reload: yes
-      name: systemd-journald
-      enabled: yes
-      state: restarted
-    become: true
-
-  - name: Create safekeeper systemd service file
-    copy:
-      dest: "/etc/systemd/system/safekeeper.service"
-      content: |
-        [Unit]
-        Description=Zenith safekeeper
-        After=network.target auditd.service
-
-        [Service]
-        Type=simple
-        User=safekeeper
-        Environment=RUST_BACKTRACE=1 ZENITH_REPO_DIR=/storage/safekeeper/data LD_LIBRARY_PATH=/usr/local/lib
-        ExecStart=/usr/local/bin/safekeeper -l {{ private_ip }}:6500 --listen-http {{ private_ip }}:7676 -D /storage/safekeeper/data
-        ExecReload=/bin/kill -HUP $MAINPID
-        KillMode=mixed
-        KillSignal=SIGINT
-        Restart=on-failure
-        TimeoutSec=0
-
-        [Install]
-        WantedBy=multi-user.target
-    tags:
-    - binaries
-    become: true
-
-  - name: Run safekeeper systemd service
-    ansible.builtin.systemd:
-      daemon_reload: yes
-      name: safekeeper
-      enabled: yes
-      state: restarted
-    tags:
-    - binaries
-    become: true
-
-  - name: Run telegraf systemd service
-    ansible.builtin.systemd:
-      daemon_reload: yes
-      name: telegraf
-      enabled: yes
-      state: restarted
-    become: true
+  tasks:
+  - name: Import compute tasks
+    import_tasks: ../compute/deploy.yml

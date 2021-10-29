@@ -4,3 +4,4 @@ postgres_install.tar.gz
 perftest.pem
 perftest.pem.pub
 *.log
+.vagrant

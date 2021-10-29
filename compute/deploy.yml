@@ -1,0 +1,125 @@
+- name: Ensure dependencies (Debian)
+  apt:
+    update_cache: yes
+    force_apt_get: yes
+    autoremove: yes
+    pkg:
+    - git
+    - automake
+    - libtool
+    - build-essential
+    - bison
+    - flex
+    - libreadline-dev
+    - zlib1g-dev
+    - libxml2-dev
+    - libcurl4-openssl-dev
+    - libsystemd-dev
+  become: true
+
+# TODO: not sure if need to build postgres or use one frmo zenith_install.tar?
+
+# - name: Clone postgres sources
+#   git: repo=https://github.com/zenithdb/postgres
+#     dest="{{ansible_env.HOME}}/postgres_src"
+#     version=main
+#     depth=1
+
+# - name: Build pg
+#   shell: env CFLAGS="-O0" ./configure --with-systemd --enable-debug --with-libxml --prefix=/usr/local && make clean && make -j4 -s
+#   args:
+#     chdir: "{{ansible_env.HOME}}/postgres_src"
+#     creates: "{{ansible_env.HOME}}/postgres_src/src/backend/postgres"
+
+# - name: Install pg
+#   shell: make -s install
+#   args:
+#     chdir: "{{ansible_env.HOME}}/postgres_src"
+#     creates: "/usr/local/bin/postgres"
+#   become: true
+
+# - name: Install zenith extension
+#   shell: env CFLAGS="-O0" make -j4 -s install
+#   args:
+#     chdir: "{{ansible_env.HOME}}/postgres_src/contrib/zenith"
+#   become: true
+
+- group:
+    name: postgres
+    state: present
+  become: true
+
+- user:
+    name: postgres
+    groups: postgres
+    shell: /bin/bash
+    append: yes
+    state: present
+    home: /var/db/postgres
+  become: true
+
+- name: Increase open files
+  lineinfile:
+    dest: /etc/security/limits.d/cluster.conf
+    line: "postgres  soft  nofile  65535"
+    state: present
+    create: yes
+  become: true
+
+- name: Create postgres directories structure
+  file:
+    path: "{{ pgdata_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0750
+    recurse: true
+  become: true
+
+- name: Initdb
+  ansible.builtin.shell:
+    cmd: runuser -u postgres -- initdb -U zenith_admin --no-instructions --no-sync
+  args:
+    chdir: "{{ pgdata_dir }}"
+    creates: "{{ pgdata_dir }}/PG_VERSION"
+  environment: "{{ pgdata_env }}"
+  become: true
+
+- name: Create compute config
+  ansible.builtin.template:
+    src: ./postgresql.conf.j2
+    dest: "{{ pgdata_dir }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  become: true
+
+- name: Create benchmark script
+  copy:
+    src: ./run_benchmark.sh
+    dest: "{{ pgdata_dir }}/run_benchmark.sh"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  become: true
+
+# TODO: what is telegraf?
+
+- name: Telegraf postgres input
+  copy:
+    dest: /etc/telegraf/telegraf.d/postgres.conf
+    owner: telegraf
+    group: telegraf
+    content: |
+      [[inputs.postgresql]]
+        address = "host=localhost user=zenith_admin sslmode=disable dbname=postgres"
+        max_lifetime = "30s"
+  become: true
+
+- name: Run telegraf systemd service
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: telegraf
+    enabled: yes
+    state: restarted
+  become: true

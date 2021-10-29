@@ -58,11 +58,13 @@ cd zenith
 # Download latest zenith binaries
 ./get_binaries.sh
 
+# Deploy safekeepers and compute
 ansible-playbook \
     -i inventory/vagrant \
     --private-key ./perftest.pem \
     --skip-tags aws-specific \
     -v deploy.yml
+    # '-l compute' can be used to run scripts for compute only
 ```
 
 To test safekeepers work:
@@ -70,6 +72,23 @@ To test safekeepers work:
 # curl on HTTP port
 curl 192.168.56.200:7676/metrics
 ```
+
+## Run pgbench
+
+```bash
+sudo su postgres
+cd ~/compute
+
+tmux new-session -d -s bench bash \
+    && tmux split-window -h -t bench bash \
+    && tmux send -t bench:0.0 "./run_benchmark.sh" C-m
+
+tmux attach -t bench
+
+tmux kill-session -t bench
+```
+
+## Clean up
 
 To clean up:
 ```bash
