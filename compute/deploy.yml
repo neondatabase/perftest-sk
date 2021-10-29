@@ -100,7 +100,7 @@
     dest: "{{ pgdata_dir }}/run_benchmark.sh"
     owner: postgres
     group: postgres
-    mode: '0644'
+    mode: '0755'
   become: true
 
 # TODO: what is telegraf?

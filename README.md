@@ -13,9 +13,11 @@ pipenv shell
 pip install ansible boto
 ```
 
-2. Install Ansible AWS extension:
+2. Install Ansible AWS extension and prometheus role:
 ```sh
 ansible-galaxy collection install amazon.aws
+ansible-galaxy install cloudalchemy.prometheus
+brew install gnu-tar # only for macOS users
 ```
 
 3. Install Packer, for example on macOS:
@@ -73,6 +75,10 @@ To test safekeepers work:
 curl 192.168.56.200:7676/metrics
 ```
 
+To open prometheus:
+```bash
+ssh -i perftest.pem -L 8080:192.168.56.210:8080 vagrant@192.168.56.210
+```
 ## Run pgbench
 
 ```bash
@@ -103,4 +109,11 @@ vagrant destroy -f
 ```sh
 export AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXXX
 export AWS_SECRET_ACCESS_KEY=XXXXXXXXxxxxxxXXXXXXXxxxXXXXXXXXXXXXXXXX
+```
+
+## Also
+
+Deploy on macOS can fail if this env is not set:
+```
+OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 ```
