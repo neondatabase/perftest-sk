@@ -122,7 +122,8 @@ terraform apply
 4. Update `/zenith/inventory/aws` with proper IP addresses.
 
 ```
-TODO
+cd tf
+./update_inventory.sh
 ```
 
 5. Run deploy
@@ -142,17 +143,36 @@ ansible-playbook \
 
 ## Test disk perf
 
-
+ssh to vm:
+```bash
+# get amazon ips
+cat zenith/inventory/aws
+ssh -i perftest.pem admin@0.0.0.0
 ```
+
+
+```bash
 pg_test_fsync
 ```
 
-```
-fio --name=random-write --ioengine=posixaio --rw=randwrite --bs=4k --numjobs=1 --size=4g --iodepth=1 --runtime=60 --time_based --end_fsync=1
+Arseniy version:
+```bash
+fio --name=random-write --direct=1 --ioengine=psync --rw=randwrite --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
 ```
 
+More numjobs:
 ```
-fio --name=random-write --direct=1 --ioengine=psync --rw=randwrite --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
+fio --name=random-write --direct=1 --ioengine=psync --rw=randwrite --bs=4k --size=4g --numjobs=4 --iodepth=1 --runtime=60 --time_based
+```
+
+Sequential read:
+```
+fio --name=seqread --direct=1 --ioengine=psync --rw=read --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
+```
+
+Sequential write:
+```
+fio --name=seqwrite --direct=1 --ioengine=psync --rw=write --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
 ```
 
 ## Test postgres without replication

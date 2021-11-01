@@ -19,7 +19,7 @@ resource "aws_instance" "safekeepers" {
   }
 
   ami                         = "ami-05ad4ed7f9c48178b" #debian-10-amd64-20210721-710
-  instance_type               = "i3.2xlarge"
+  instance_type               = "i3.large"
   key_name                    = "perftest"
   subnet_id                   = "subnet-07e498251a08efe65"
   monitoring                  = false

@@ -29,6 +29,7 @@
       - gnupg
       - lsb-release
       - git
+      - htop
       # - pkg-config # rust openssl-sys needs pkg-config
       # - libclang-dev # rust rocksdb
       # - clang # rust rocksdb
@@ -125,6 +126,7 @@
 - hosts: compute
   roles:
   - cloudalchemy.prometheus
+  tags: prometheus
   vars:
     prometheus_targets:
       node:

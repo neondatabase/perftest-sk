@@ -5,9 +5,9 @@ ansible_user=admin
 ansible_user=admin
 
 [safekeepers]
-3.80.227.139 private_ip=172.32.25.99
-34.235.115.220 private_ip=172.32.25.101
-107.22.157.22 private_ip=172.32.19.245
+34.207.149.201 private_ip=172.32.29.146
+34.229.217.129 private_ip=172.32.24.189
+54.226.143.212 private_ip=172.32.27.7
 
 [compute]
-54.166.32.210 private_ip=172.32.28.176
+3.94.195.136 private_ip=172.32.23.84

@@ -5,21 +5,18 @@
     mode: "0777"
   become: true
 
-# XXX: amazon.aws.ec2 ignores `device_name: /dev/sdb` and puts storage
-# to /dev/xvdb by default.
-- name: Create a ext4 filesystem on EBS volume
+- name: Create a ext4 filesystem on nvme volume
   community.general.filesystem:
     fstype: ext4
-    # dev: /dev/sdb
-    dev: /dev/xvdb
+    dev: /dev/nvme0n1
   tags:
   - aws-specific
   become: true
 
-- name: Mount EBS storage
+- name: Mount nvme storage
   ansible.posix.mount:
     path: /storage
-    src: /dev/xvdb
+    src: /dev/nvme0n1
     fstype: ext4
     boot: yes
     state: mounted
