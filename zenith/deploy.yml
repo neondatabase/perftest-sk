@@ -1,10 +1,14 @@
 #
-# Actually this does both VM provisioning and Zenith binaries deploy.
+# Deploy binaries and all other stuff useful for running performance tests on real-like deployments
 #
 ---
 
-# Common tasks for both safekeepers and pageservers
+# Common tasks for both safekeepers and pageservers, such as downloading binaries and installing dependencies
 - hosts: all
+
+  vars:
+    # If this is true, binaries will be downloaded from the latest stable docker build
+    use_docker: true
 
   tasks:
 
@@ -19,15 +23,77 @@
       - libseccomp-dev
       - gnupg
       - tmux
+      - fio
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - git
       # - pkg-config # rust openssl-sys needs pkg-config
       # - libclang-dev # rust rocksdb
       # - clang # rust rocksdb
     become: true
 
-  # Requires gpg which is installed previously
-  - name: Include common tasks
-    import_tasks: ../common/deploy.yml
+  - name: Install prometheus-node-exporter
+    apt:
+      name: prometheus-node-exporter
+      state: latest
+    become: true
 
+  # Install docker
+  - name: Add apt signing key from official docker repo
+    apt_key:
+      url: https://download.docker.com/linux/debian/gpg
+      state: present
+    become: true
+    when: use_docker
+
+  - name: Add docker official repository for Debian Buster
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/debian buster stable
+      state: present
+    become: true
+    when: use_docker
+
+  - name: Install docker
+    apt:
+      pkg:
+      - docker-ce
+      state: present
+    become: true
+    when: use_docker
+
+  # Fetch binaries from dockerhub, if that's faster than copying archive
+  - name: Copy binaries script
+    copy:
+      src: ./get_binaries.sh
+      dest: "{{ansible_env.HOME}}/get_binaries.sh"
+      mode: '0755'
+    tags:
+    - binaries
+    become: true
+    when: use_docker
+
+  - name: Download binaries from zenithdb/zenith:latest
+    shell: ./get_binaries.sh
+    args:
+      chdir: "{{ansible_env.HOME}}"
+    tags:
+    - binaries
+    become: true
+    when: use_docker
+
+  - name: Extract Zenith binaries from zenith_install.tar.gz into /usr/local
+    ansible.builtin.unarchive:
+      src: "{{ansible_env.HOME}}/zenith_install.tar.gz"
+      dest: /usr/local
+      remote_src: true
+    tags:
+    - binaries
+    become: true
+    when: use_docker
+
+  # Upload binaries if they're places locally
   - name: Extract Zenith binaries from zenith_install.tar.gz into /usr/local
     ansible.builtin.unarchive:
       src: zenith_install.tar.gz
@@ -35,6 +101,7 @@
     tags:
     - binaries
     become: true
+    when: not use_docker
 
 
 - hosts: safekeepers
@@ -47,9 +114,7 @@
 - hosts: compute
 
   vars:
-    pgdata_dir: /var/db/postgres/compute
-    pgdata_env:
-      PGDATA: /var/db/postgres/compute
+    pg_base: /var/db/postgres/
 
   tasks:
   - name: Import compute tasks

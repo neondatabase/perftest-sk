@@ -17,33 +17,6 @@
     - libsystemd-dev
   become: true
 
-# TODO: not sure if need to build postgres or use one frmo zenith_install.tar?
-
-# - name: Clone postgres sources
-#   git: repo=https://github.com/zenithdb/postgres
-#     dest="{{ansible_env.HOME}}/postgres_src"
-#     version=main
-#     depth=1
-
-# - name: Build pg
-#   shell: env CFLAGS="-O0" ./configure --with-systemd --enable-debug --with-libxml --prefix=/usr/local && make clean && make -j4 -s
-#   args:
-#     chdir: "{{ansible_env.HOME}}/postgres_src"
-#     creates: "{{ansible_env.HOME}}/postgres_src/src/backend/postgres"
-
-# - name: Install pg
-#   shell: make -s install
-#   args:
-#     chdir: "{{ansible_env.HOME}}/postgres_src"
-#     creates: "/usr/local/bin/postgres"
-#   become: true
-
-# - name: Install zenith extension
-#   shell: env CFLAGS="-O0" make -j4 -s install
-#   args:
-#     chdir: "{{ansible_env.HOME}}/postgres_src/contrib/zenith"
-#   become: true
-
 - group:
     name: postgres
     state: present
@@ -66,60 +39,54 @@
     create: yes
   become: true
 
+# Create several pgdata directories for different scenarios
 - name: Create postgres directories structure
   file:
-    path: "{{ pgdata_dir }}"
+    path: "{{ pg_base }}/{{ item }}"
     state: directory
     owner: postgres
     group: postgres
     mode: 0750
     recurse: true
   become: true
+  loop:
+  - compute
+  - compute_local
+  - compute_sync
 
 - name: Initdb
   ansible.builtin.shell:
     cmd: runuser -u postgres -- initdb -U zenith_admin --no-instructions --no-sync
   args:
-    chdir: "{{ pgdata_dir }}"
-    creates: "{{ pgdata_dir }}/PG_VERSION"
-  environment: "{{ pgdata_env }}"
+    chdir: "{{ pg_base }}/{{ item }}"
+    creates: "{{ pg_base }}/{{ item }}/PG_VERSION"
+  environment:
+    PGDATA: "{{ pg_base }}/{{ item }}"
   become: true
+  loop:
+  - compute
+  - compute_local
+  - compute_sync
 
-- name: Create compute config
+- name: Create compute config for safekeepers compute
   ansible.builtin.template:
     src: ./postgresql.conf.j2
-    dest: "{{ pgdata_dir }}/postgresql.conf"
+    dest: "{{ pg_base }}/compute/postgresql.conf"
     owner: postgres
     group: postgres
     mode: '0644'
   become: true
 
-- name: Create benchmark script
+- name: Create benchmark scripts
   copy:
     src: ./run_benchmark.sh
-    dest: "{{ pgdata_dir }}/run_benchmark.sh"
+    dest: "{{ pg_base }}/{{ item }}/run_benchmark.sh"
     owner: postgres
     group: postgres
     mode: '0755'
   become: true
+  loop:
+  - compute
+  - compute_local
+  - compute_sync
 
-# TODO: what is telegraf?
-
-- name: Telegraf postgres input
-  copy:
-    dest: /etc/telegraf/telegraf.d/postgres.conf
-    owner: telegraf
-    group: telegraf
-    content: |
-      [[inputs.postgresql]]
-        address = "host=localhost user=zenith_admin sslmode=disable dbname=postgres"
-        max_lifetime = "30s"
-  become: true
-
-- name: Run telegraf systemd service
-  ansible.builtin.systemd:
-    daemon_reload: yes
-    name: telegraf
-    enabled: yes
-    state: restarted
-  become: true

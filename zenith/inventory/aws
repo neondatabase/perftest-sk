@@ -1,0 +1,13 @@
+[compute:vars]
+ansible_user=admin
+
+[safekeepers:vars]
+ansible_user=admin
+
+[safekeepers]
+3.80.227.139 private_ip=172.32.25.99
+34.235.115.220 private_ip=172.32.25.101
+107.22.157.22 private_ip=172.32.19.245
+
+[compute]
+54.166.32.210 private_ip=172.32.28.176

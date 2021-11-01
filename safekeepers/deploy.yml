@@ -100,11 +100,3 @@
   tags:
   - binaries
   become: true
-
-- name: Run telegraf systemd service
-  ansible.builtin.systemd:
-    daemon_reload: yes
-    name: telegraf
-    enabled: yes
-    state: restarted
-  become: true

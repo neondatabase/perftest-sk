@@ -1,4 +1,4 @@
-# Safekeeper perf testing
+# Safekeeper performance testing
 
 ## Prerequisites
 
@@ -13,21 +13,23 @@ pipenv shell
 pip install ansible boto
 ```
 
-2. Install Ansible AWS extension and prometheus role:
+2. Install Ansible Prometheus role:
 ```sh
-ansible-galaxy collection install amazon.aws
 ansible-galaxy install cloudalchemy.prometheus
 brew install gnu-tar # only for macOS users
 ```
 
-3. Install Packer, for example on macOS:
+3. Install Terraform, for example on macOS:
 ```sh
-brew install packer
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
 ```
 
 4. Have a Docker daemon running locally.
 
-## Prepare local env for playbook testing
+# Local deploy
+
+## Prepare local env for testing ansible scripts
 
 1. Install vagrant and vm provider:
 ```bash
@@ -67,6 +69,7 @@ ansible-playbook \
     --skip-tags aws-specific \
     -v deploy.yml
     # '-l compute' can be used to run scripts for compute only
+    # '--skip-tags binaries' can be used to skip binaries upload
 ```
 
 To test safekeepers work:
@@ -75,10 +78,99 @@ To test safekeepers work:
 curl 192.168.56.200:7676/metrics
 ```
 
-To open prometheus:
+To bind prometheus on localhost:8080:
 ```bash
 ssh -i perftest.pem -L 8080:192.168.56.210:8080 vagrant@192.168.56.210
 ```
+
+## Clean up
+
+To clean up:
+```bash
+vagrant destroy -f
+```
+
+## Also
+
+Deploy on macOS can fail if this env is not set:
+```
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+```
+
+# AWS deploy
+
+## Run deploy on AWS
+
+1. Get `perftest.pem` or any other existing ssh private key and put it with a `400` mode in a safe place. Also upload it to EC2 Key Pairs, to use it for vm creation. Currently it's called 'perftest'.
+
+2. Export AWS keys in your active shell tab:
+```sh
+export AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXXX
+export AWS_SECRET_ACCESS_KEY=XXXXXXXXxxxxxxXXXXXXXxxxXXXXXXXXXXXXXXXX
+```
+
+3. Create EC2 safekeepers and compute VMs
+
+
+```bash
+cd tf
+terraform init
+terraform plan
+terraform apply
+```
+
+4. Update `/zenith/inventory/aws` with proper IP addresses.
+
+```
+TODO
+```
+
+5. Run deploy
+
+```bash
+# Base directory for all deploys
+cd zenith
+
+# Deploy safekeepers and compute
+ansible-playbook \
+    -i inventory/aws \
+    --private-key ./perftest.pem \
+    -v deploy.yml
+```
+
+# Benchmarks
+
+## Test disk perf
+
+
+```
+pg_test_fsync
+```
+
+```
+fio --name=random-write --ioengine=posixaio --rw=randwrite --bs=4k --numjobs=1 --size=4g --iodepth=1 --runtime=60 --time_based --end_fsync=1
+```
+
+```
+fio --name=random-write --direct=1 --ioengine=psync --rw=randwrite --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
+```
+
+## Test postgres without replication
+
+Run on compute:
+```
+sudo su postgres
+cd ~/compute_local/
+
+export PGDATA=$(pwd)
+export PGUSER=zenith_admin
+export PGDATABASE=postgres
+pg_ctl start -w -l pg.log
+pgbench -i -s 40   2>&1 | tee -a pgbench_init.log
+pgbench -c 32 -P 1 -T 60   2>&1 | tee -a pgbench.log
+pg_ctl stop
+```
+
 ## Run pgbench
 
 ```bash
@@ -92,28 +184,4 @@ tmux new-session -d -s bench bash \
 tmux attach -t bench
 
 tmux kill-session -t bench
-```
-
-## Clean up
-
-To clean up:
-```bash
-vagrant destroy -f
-```
-
-## Run deploy on AWS (TODO)
-
-1. Get `pageserver.pem` or any other existing ssh private key and put it with a `400` mode in a safe place.
-
-2. Export AWS keys in your active shell tab:
-```sh
-export AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXXX
-export AWS_SECRET_ACCESS_KEY=XXXXXXXXxxxxxxXXXXXXXxxxXXXXXXXXXXXXXXXX
-```
-
-## Also
-
-Deploy on macOS can fail if this env is not set:
-```
-OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 ```
