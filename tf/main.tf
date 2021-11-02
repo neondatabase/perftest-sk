@@ -15,7 +15,10 @@ provider "aws" {
 resource "aws_instance" "safekeepers" {
   count = 3
   tags = {
-    Name = "perftest_safekeeper_${count.index + 1}"
+    Name             = "perftest_safekeeper_${count.index + 1}"
+    "zenith/env"     = "test"
+    "zenith/observe" = "enable"
+    "zenith/service" = "safekeeper"
   }
 
   ami                         = "ami-05ad4ed7f9c48178b" #debian-10-amd64-20210721-710
@@ -32,18 +35,21 @@ resource "aws_instance" "safekeepers" {
 
 resource "aws_instance" "compute" {
   tags = {
-    Name = "perftest_compute"
+    Name             = "perftest_compute"
+    "zenith/env"     = "test"
+    "zenith/observe" = "enable"
+    "zenith/service" = "compute"
   }
 
   ami                         = "ami-05ad4ed7f9c48178b" #debian-10-amd64-20210721-710
-  instance_type               = "i3.large"
+  instance_type               = "c5.2xlarge"
   key_name                    = "perftest"
   subnet_id                   = "subnet-07e498251a08efe65"
   monitoring                  = false
   associate_public_ip_address = true
 
   root_block_device {
-    volume_size = "50"
+    volume_size = "300"
   }
 }
 
