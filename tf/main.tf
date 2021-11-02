@@ -24,6 +24,10 @@ resource "aws_instance" "safekeepers" {
   subnet_id                   = "subnet-07e498251a08efe65"
   monitoring                  = false
   associate_public_ip_address = true
+
+  root_block_device {
+    volume_size = "50"
+  }
 }
 
 resource "aws_instance" "compute" {
@@ -37,6 +41,10 @@ resource "aws_instance" "compute" {
   subnet_id                   = "subnet-07e498251a08efe65"
   monitoring                  = false
   associate_public_ip_address = true
+
+  root_block_device {
+    volume_size = "50"
+  }
 }
 
 output "safekeepers_ips" {

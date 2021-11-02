@@ -1,0 +1,15 @@
+max_wal_senders=10
+wal_log_hints=on
+max_replication_slots=10
+hot_standby=on
+shared_buffers=8192MB
+fsync=off
+max_connections=100
+wal_sender_timeout=0
+wal_level=replica
+listen_addresses='127.0.0.1'
+port=5432
+wal_keep_size=10TB
+shared_preload_libraries=zenith
+zenith.page_server_connstring=''
+synchronous_standby_names = 'ANY 2 (s1, s2, s3)'

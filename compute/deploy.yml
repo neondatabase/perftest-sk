@@ -97,6 +97,15 @@
     mode: '0644'
   become: true
 
+- name: Create compute config for syncrepl compute
+  ansible.builtin.template:
+    src: ./postgresql-main.conf.j2
+    dest: "{{ pg_base }}/compute_sync/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  become: true
+
 - name: Create benchmark scripts
   copy:
     src: ./run_benchmark.sh
