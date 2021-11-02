@@ -107,6 +107,10 @@
 
 - hosts: safekeepers
 
+  vars:
+    # If this is true, safekeepers data will be pruned
+    prune_data: true
+
   tasks:
   - name: Import safekeepers tasks
     import_tasks: ../safekeepers/deploy.yml

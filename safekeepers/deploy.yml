@@ -39,6 +39,14 @@
     home: /storage/safekeeper
   become: true
 
+- name: Prune safekeeper data
+  ansible.builtin.command:
+    args:
+      - "rm -rf /storage/safekeeper"
+    executable: /bin/bash
+  become: true
+  when: prune_data
+
 - name: Create safekeeper data directory
   ansible.builtin.file:
     path: /storage/safekeeper/data
