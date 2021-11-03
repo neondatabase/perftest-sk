@@ -17,7 +17,7 @@ resource "aws_instance" "safekeepers" {
   tags = {
     Name             = "perftest_safekeeper_${count.index + 1}"
     "zenith/env"     = "test"
-    "zenith/observe" = "enable"
+    "zenith/observe" = "enabled"
     "zenith/service" = "safekeeper"
   }
 
@@ -37,7 +37,7 @@ resource "aws_instance" "compute" {
   tags = {
     Name             = "perftest_compute"
     "zenith/env"     = "test"
-    "zenith/observe" = "enable"
+    "zenith/observe" = "enabled"
     "zenith/service" = "compute"
   }
 

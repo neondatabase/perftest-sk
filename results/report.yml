@@ -1,0 +1,37 @@
+#
+# Collect logs and build reports after the test execution
+#
+---
+
+- hosts: compute
+  tasks:
+  - name: Get info about test run
+    shell: |
+      echo -n "Start: " > info.txt
+      stat -c '%z' pgbench_init.log >> info.txt
+      echo -n "Finish: " >> info.txt
+      stat -c '%z' pgbench.log >> info.txt
+    args:
+      chdir: "/var/db/postgres/compute"
+    become: yes
+
+  - name: Download pgbench.log
+    fetch:
+      src: /var/db/postgres/compute/pgbench.log
+      dest: ./pgbench.log
+      flat: yes
+    become: yes
+
+  - name: Download pgbench_init.log
+    fetch:
+      src: /var/db/postgres/compute/pgbench_init.log
+      dest: ./pgbench_init.log
+      flat: yes
+    become: yes
+
+  - name: Download info.txt
+    fetch:
+      src: /var/db/postgres/compute/info.txt
+      dest: ./info.txt
+      flat: yes
+    become: yes
