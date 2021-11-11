@@ -4,34 +4,29 @@
 ---
 
 - hosts: compute
+  vars:
+    test_name: compute
+
   tasks:
   - name: Get info about test run
     shell: |
-      echo -n "Start: " > info.txt
+      echo "Test: {{ test_name }}" > info.txt
+      echo -n "Start: " >> info.txt
       stat -c '%z' pgbench_init.log >> info.txt
       echo -n "Finish: " >> info.txt
       stat -c '%z' pgbench.log >> info.txt
     args:
-      chdir: "/var/db/postgres/compute"
+      chdir: "/var/db/postgres/{{ test_name }}"
     become: yes
 
-  - name: Download pgbench.log
+  - name: Download files
     fetch:
-      src: /var/db/postgres/compute/pgbench.log
-      dest: ./pgbench.log
+      src: /var/db/postgres/{{ test_name }}/{{ item }}
+      dest: ./{{ item }}
       flat: yes
     become: yes
-
-  - name: Download pgbench_init.log
-    fetch:
-      src: /var/db/postgres/compute/pgbench_init.log
-      dest: ./pgbench_init.log
-      flat: yes
-    become: yes
-
-  - name: Download info.txt
-    fetch:
-      src: /var/db/postgres/compute/info.txt
-      dest: ./info.txt
-      flat: yes
-    become: yes
+    loop:
+    - pgbench.log
+    - pgbench_init.log
+    - info.txt
+    - pg2.log

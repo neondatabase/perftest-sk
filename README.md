@@ -2,21 +2,16 @@
 
 ## Prerequisites
 
-0. Create and use pipenv
+1. Create and use pipenv
 ```sh
 pipenv --python 3.10
 pipenv shell
 ```
 
-1. Install `ansible` and `boto`:
+2. Install `ansible`:
 ```sh
-pip install ansible boto
-```
-
-2. Install Ansible Prometheus role:
-```sh
-ansible-galaxy install cloudalchemy.prometheus
-brew install gnu-tar # only for macOS users
+pip install ansible
+ansible-galaxy collection install ansible.posix
 ```
 
 3. Install Terraform, for example on macOS:
@@ -25,7 +20,19 @@ brew tap hashicorp/tap
 brew install hashicorp/tap/terraform
 ```
 
-4. Have a Docker daemon running locally.
+4. Prepare private key and init ssh-agent:
+```bash
+cd zenith
+
+# Create perftest.pem and perftest.pem.pub files
+ssh-keygen -f perftest.pem
+
+# Start SSH agent and add perftest.pem
+eval `ssh-agent`
+ssh-add perftest.pem
+```
+
+5. Have a Docker daemon running locally.
 
 # Local deploy
 
@@ -37,21 +44,15 @@ brew install vagrant
 brew install virtualbox
 ```
 
-2. Create private key for deploys:
-```bash
-# Create perftest.pem and perftest.pem.pub files
-ssh-keygen -f perftest.pem
-```
-
-3. Create and provision vms:
+2. Create and provision vms:
 ```bash
 vagrant up
 
 # Test ssh access to safekeeeper1
-ssh -i perftest.pem vagrant@192.168.56.200
+ssh vagrant@192.168.56.200
 ```
 
-4. Make sure zenith/inventory/vagrant has right IP addresses.
+3. Make sure zenith/inventory/vagrant has right IP addresses.
 
 ## Run deploy locally
 
@@ -65,7 +66,6 @@ cd zenith
 # Deploy safekeepers and compute
 ansible-playbook \
     -i inventory/vagrant \
-    --private-key ./perftest.pem \
     --skip-tags aws-specific \
     -v deploy.yml
     # '-l compute' can be used to run scripts for compute only
@@ -80,7 +80,7 @@ curl 192.168.56.200:7676/metrics
 
 To bind prometheus on localhost:8080:
 ```bash
-ssh -i perftest.pem -L 8080:192.168.56.210:8080 vagrant@192.168.56.210
+ssh -L 8080:192.168.56.210:8080 vagrant@192.168.56.210
 ```
 
 ## Clean up
@@ -88,13 +88,6 @@ ssh -i perftest.pem -L 8080:192.168.56.210:8080 vagrant@192.168.56.210
 To clean up:
 ```bash
 vagrant destroy -f
-```
-
-## Also
-
-Deploy on macOS can fail if this env is not set:
-```
-export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 ```
 
 # AWS deploy
@@ -135,45 +128,10 @@ cd zenith
 # Deploy safekeepers and compute
 ansible-playbook \
     -i inventory/aws \
-    --private-key ./perftest.pem \
     -v deploy.yml
 ```
 
 # Benchmarks
-
-## Test disk perf
-
-ssh to vm:
-```bash
-# get amazon ips
-cat zenith/inventory/aws
-ssh -i perftest.pem admin@0.0.0.0
-```
-
-
-```bash
-pg_test_fsync
-```
-
-Arseniy version:
-```bash
-fio --name=random-write --direct=1 --ioengine=psync --rw=randwrite --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
-```
-
-More numjobs:
-```
-fio --name=random-write --direct=1 --ioengine=psync --rw=randwrite --bs=4k --size=4g --numjobs=4 --iodepth=1 --runtime=60 --time_based
-```
-
-Sequential read:
-```
-fio --name=seqread --direct=1 --ioengine=psync --rw=read --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
-```
-
-Sequential write:
-```
-fio --name=seqwrite --direct=1 --ioengine=psync --rw=write --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
-```
 
 ## Test postgres without replication
 
@@ -204,4 +162,57 @@ tmux new-session -d -s bench bash \
 tmux attach -t bench
 
 tmux kill-session -t bench
+```
+
+## Create report
+
+```
+cd results
+ansible-playbook -i ../zenith/inventory/aws \
+    --private-key ../zenith/perftest.pem \
+    -v ./report.yml
+
+./create_report.sh
+```
+
+## Test disk perf
+
+ssh to vm:
+```bash
+# get amazon ips
+cat zenith/inventory/aws
+ssh admin@0.0.0.0
+```
+
+
+```bash
+pg_test_fsync
+```
+
+Arseniy version:
+```bash
+fio --name=random-write --direct=1 --ioengine=psync --rw=randwrite --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
+```
+
+More numjobs:
+```
+fio --name=random-write --direct=1 --ioengine=psync --rw=randwrite --bs=4k --size=4g --numjobs=4 --iodepth=1 --runtime=60 --time_based
+```
+
+Sequential read:
+```
+fio --name=seqread --direct=1 --ioengine=psync --rw=read --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
+```
+
+Sequential write:
+```
+fio --name=seqwrite --direct=1 --ioengine=psync --rw=write --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based
+```
+
+# Misc
+
+```
+export PGDATA=$(pwd)
+export PGUSER=zenith_admin
+export PGDATABASE=postgres
 ```

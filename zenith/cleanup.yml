@@ -1,0 +1,58 @@
+#
+# Clean everything up
+#
+---
+
+- hosts: safekeepers
+
+  tasks:
+  - name: Stop safekeeper systemd service
+    ansible.builtin.systemd:
+      name: safekeeper
+      state: stopped
+    become: true
+
+- hosts: all
+
+  tasks:
+  - name: Kill all postgres processes
+    shell: killall -9 postgres --wait
+    become: true
+    ignore_errors: true
+
+  - name: Check if postgres processes are not running
+    shell: "pgrep postgres"
+    register: postgres_processes
+    failed_when: postgres_processes.rc != 1
+
+  - name: Check if pgbench processes are not running
+    shell: "pgrep pgbench"
+    register: pgbench_processes
+    failed_when: pgbench_processes.rc != 1
+
+  - name: Check if safekeeper processes are not running
+    shell: "pgrep safekeeper"
+    register: safekeeper_processes
+    failed_when: safekeeper_processes.rc != 1
+
+- hosts: compute
+
+  tasks:
+  - name: Clean up postgres data
+    shell: "rm -rf /var/db/postgres/*"
+    become: true
+
+  - name: Clean up tmp
+    shell: "rm -rf /tmp/*"
+    become: true
+
+- hosts: safekeepers
+
+  tasks:
+  - name: Clean up storage data
+    shell: "rm -rf /storage/*"
+    become: true
+
+  - name: Clean up tmp
+    shell: "rm -rf /tmp/*"
+    become: true

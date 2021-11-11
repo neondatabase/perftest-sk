@@ -1,22 +1,3 @@
-- name: Ensure dependencies (Debian)
-  apt:
-    update_cache: yes
-    force_apt_get: yes
-    autoremove: yes
-    pkg:
-    - git
-    - automake
-    - libtool
-    - build-essential
-    - bison
-    - flex
-    - libreadline-dev
-    - zlib1g-dev
-    - libxml2-dev
-    - libcurl4-openssl-dev
-    - libsystemd-dev
-  become: true
-
 - group:
     name: postgres
     state: present
@@ -106,6 +87,15 @@
     mode: '0644'
   become: true
 
+- name: Create pg_hba.conf for syncrepl compute
+  copy:
+    src: ./pg_hba_trust.conf
+    dest: "{{ pg_base }}/compute_sync/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  become: true
+
 - name: Create benchmark scripts
   copy:
     src: ./run_benchmark.sh
@@ -119,3 +109,23 @@
   - compute_local
   - compute_sync
 
+- name: Create basebackup for compute_sync
+  ansible.builtin.shell: |
+    runuser -u postgres -- pg_ctl start -w
+    runuser -u postgres -- psql -c "SELECT pg_create_physical_replication_slot('s1');"
+    runuser -u postgres -- psql -c "SELECT pg_create_physical_replication_slot('s2');"
+    runuser -u postgres -- psql -c "SELECT pg_create_physical_replication_slot('s3');"
+    runuser -u postgres -- pg_basebackup -D "/tmp/basebackup_sync"
+    runuser -u postgres -- pg_ctl stop -w
+  args:
+    chdir: "{{ pg_base }}/compute_sync"
+    creates: "/tmp/basebackup_sync"
+  environment:
+    PGDATA: "{{ pg_base }}/compute_sync"
+    PGUSER: zenith_admin
+    PGDATABASE: postgres
+  become: true
+
+- name: Change permissions for basebackup
+  ansible.builtin.shell: |
+    sudo chown -R $USER:$USER /tmp/basebackup_sync

@@ -1,0 +1,17 @@
+max_wal_senders=10
+wal_log_hints=on
+max_replication_slots=10
+hot_standby=on
+shared_buffers=8192MB
+fsync=on
+max_connections=100
+wal_sender_timeout=0
+wal_level=replica
+listen_addresses='127.0.0.1'
+port=5432
+wal_keep_size=10TB
+shared_preload_libraries=zenith
+zenith.page_server_connstring=''
+synchronous_standby_names = 'ANY 2 (s1, s2, s3)'
+primary_slot_name = 's{{ groups['safekeepers'].index(inventory_hostname)+1 }}'
+primary_conninfo = 'application_name=s{{ groups['safekeepers'].index(inventory_hostname)+1 }} user=zenith_admin host={{ hostvars[groups['compute'][0]].private_ip }} channel_binding=disable port=5432 sslmode=disable sslcompression=0 sslsni=1 ssl_min_protocol_version=TLSv1.2 gssencmode=disable krbsrvname=postgres target_session_attrs=any'

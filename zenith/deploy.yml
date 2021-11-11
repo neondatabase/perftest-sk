@@ -3,9 +3,8 @@
 #
 ---
 
-# Common tasks for both safekeepers and pageservers, such as downloading binaries and installing dependencies
+# Common tasks for both safekeepers and compute, such as downloading binaries and installing dependencies
 - hosts: all
-
   vars:
     # If this is true, binaries will be downloaded from the latest stable docker build
     use_docker: true
@@ -30,6 +29,17 @@
       - lsb-release
       - git
       - htop
+      - automake
+      - libtool
+      - build-essential
+      - bison
+      - flex
+      - libreadline-dev
+      - zlib1g-dev
+      - libxml2-dev
+      - libcurl4-openssl-dev
+      - libsystemd-dev
+      - rsync
       # - pkg-config # rust openssl-sys needs pkg-config
       # - libclang-dev # rust rocksdb
       # - clang # rust rocksdb
@@ -94,7 +104,7 @@
     become: true
     when: use_docker
 
-  # Upload binaries if they're places locally
+  # Upload binaries if they're placed locally
   - name: Extract Zenith binaries from zenith_install.tar.gz into /usr/local
     ansible.builtin.unarchive:
       src: zenith_install.tar.gz
@@ -104,9 +114,21 @@
     become: true
     when: not use_docker
 
+  # Run ldconfig to update library cache
+  - name: Run ldconfig
+    shell: ldconfig
+    become: true
+
+- hosts: compute
+  vars:
+    pg_base: /var/db/postgres/
+
+  tasks:
+  - name: Import compute tasks
+    import_tasks: ../compute/deploy.yml
+
 
 - hosts: safekeepers
-
   vars:
     # If this is true, safekeepers data will be pruned
     prune_data: true
@@ -114,13 +136,3 @@
   tasks:
   - name: Import safekeepers tasks
     import_tasks: ../safekeepers/deploy.yml
-
-  
-- hosts: compute
-
-  vars:
-    pg_base: /var/db/postgres/
-
-  tasks:
-  - name: Import compute tasks
-    import_tasks: ../compute/deploy.yml

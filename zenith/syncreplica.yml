@@ -1,0 +1,69 @@
+#
+# Deploy binaries and all other stuff useful for running performance tests on real-like deployments
+#
+---
+
+- hosts: all
+
+  tasks:
+  - name: Check if postgres processes are not running
+    shell: "pgrep postgres"
+    register: postgres_processes
+    failed_when: postgres_processes.rc != 1
+
+- hosts: safekeepers
+
+  tasks:
+  - name: Stop safekeeper systemd service
+    ansible.builtin.systemd:
+      name: safekeeper
+      state: stopped
+    become: true
+
+- hosts: compute
+
+  tasks:
+  - name: Start postgres for compute_sync
+    ansible.builtin.shell: |
+      runuser -u postgres -- pg_ctl start -w -l pg.log
+    args:
+      chdir: "/var/db/postgres/compute_sync"
+    environment:
+      PGDATA: "/var/db/postgres/compute_sync"
+      PGUSER: zenith_admin
+      PGDATABASE: postgres
+    become: true
+
+- hosts: safekeepers
+
+  tasks:
+  - name: Start postgres for replica_sync
+    ansible.builtin.shell: |
+      runuser -u postgres -- pg_ctl start -w -l pg.log
+    args:
+      chdir: "/storage/replica_sync"
+    environment:
+      PGDATA: "/storage/replica_sync"
+      PGUSER: zenith_admin
+      PGDATABASE: postgres
+    become: true
+
+- hosts: compute
+
+  tasks:
+  - name: Run benchmark
+    ansible.builtin.shell: |
+      tmux kill-session -t bench || true
+
+      tmux new-session -d -s bench bash \
+        && tmux split-window -h -t bench bash \
+        && tmux send -t bench:0.0 "./run_benchmark.sh" C-m
+
+      sleep 5 && cat pgbench_init.log
+    args:
+      chdir: "/var/db/postgres/compute_sync"
+    environment:
+      PGDATA: "/var/db/postgres/compute_sync"
+      PGUSER: zenith_admin
+      PGDATABASE: postgres
+    become: true

@@ -6,11 +6,13 @@ set -eux
 # zenithdb/zenith:latest Docker image.
 #
 
+export DOCKER_IMAGE=arthurwow/zenith:latest
+
 rm -rf zenith_install
 mkdir zenith_install
 
-docker pull zenithdb/zenith:latest
-ID=$(docker create zenithdb/zenith:latest)
+docker pull $DOCKER_IMAGE
+ID=$(docker create $DOCKER_IMAGE)
 
 echo "Copying binaries from the temp container $ID"
 docker cp $ID:/data/postgres_install.tar.gz .

@@ -102,3 +102,68 @@
   tags:
   - binaries
   become: true
+
+- name: Download basebackup from compute node
+  ansible.posix.synchronize:
+    src: "/tmp/basebackup_sync/"
+    dest: "/tmp/replica_sync/"
+    mode: push
+  delegate_to: "{{groups['compute'][0]}}"
+
+# Create postgres user
+- group:
+    name: postgres
+    state: present
+  become: true
+
+- user:
+    name: postgres
+    groups: postgres
+    shell: /bin/bash
+    append: yes
+    state: present
+    home: /storage
+  become: true
+
+- name: Increase open files
+  lineinfile:
+    dest: /etc/security/limits.d/cluster.conf
+    line: "postgres  soft  nofile  65535"
+    state: present
+    create: yes
+  become: true
+
+- name: Create pgdata directory
+  ansible.builtin.shell: |
+    cp -R /tmp/replica_sync /storage/replica_sync
+  become: true
+  args:
+    creates: /storage/replica_sync/
+
+- name: Fix pgdata permissions
+  file:
+    path: "/storage/replica_sync"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0750
+    recurse: true
+  become: true
+
+- name: Create config for syncrepl replica
+  ansible.builtin.template:
+    src: ./postgresql-replica.conf.j2
+    dest: "/storage/replica_sync/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  become: true
+
+- name: Create standby.signal
+  ansible.builtin.file:
+    path: "/storage/replica_sync/standby.signal"
+    state: touch
+    mode: "0644"
+    owner: postgres
+    group: postgres
+  become: true
