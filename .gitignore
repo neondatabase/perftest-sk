@@ -1,4 +1,5 @@
 env.sh
+.s3cfg
 
 ### Terraform ###
 # Local .terraform directories

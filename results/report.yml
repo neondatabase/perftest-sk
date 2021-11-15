@@ -29,4 +29,3 @@
     - pgbench.log
     - pgbench_init.log
     - info.txt
-    - pg2.log
