@@ -17,7 +17,7 @@
   - name: Ensure safekeeper systemd service is running
     ansible.builtin.systemd:
       name: safekeeper
-      state: started
+      state: stopped
     become: true
 
 - hosts: compute
@@ -26,7 +26,7 @@
   - name: Ensure there are no files from previous runs
     shell: "test -f pgbench_init.log"
     args:
-      chdir: "{{ main_dir }}/compute"
+      chdir: "{{ main_dir }}/compute_local"
     register: log_exists
     failed_when: log_exists.rc != 1
     become: true
@@ -35,9 +35,9 @@
     ansible.builtin.shell: |
       runuser -u postgres -- pg_ctl start -w > /dev/null
     args:
-      chdir: "{{ main_dir }}/compute"
+      chdir: "{{ main_dir }}/compute_local"
     environment:
-      PGDATA: "{{ main_dir }}/compute"
+      PGDATA: "{{ main_dir }}/compute_local"
       PGUSER: zenith_admin
       PGDATABASE: postgres
     become: true
@@ -52,9 +52,9 @@
 
       sleep 5 && cat pgbench_init.log
     args:
-      chdir: "{{ main_dir }}/compute"
+      chdir: "{{ main_dir }}/compute_local"
     environment:
-      PGDATA: "{{ main_dir }}/compute"
+      PGDATA: "{{ main_dir }}/compute_local"
       PGUSER: zenith_admin
       PGDATABASE: postgres
     become: true

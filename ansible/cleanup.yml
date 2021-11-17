@@ -39,7 +39,7 @@
 
   tasks:
   - name: Clean up postgres data
-    shell: "rm -rf /var/db/postgres/*"
+    shell: "rm -rf /var/db/postgres/compute*"
     become: true
 
   - name: Clean up tmp
@@ -50,7 +50,7 @@
 
   tasks:
   - name: Clean up storage data
-    shell: "rm -rf /storage/*"
+    shell: "rm -rf /storage/safekeeper /storage/replica_sync"
     become: true
 
   - name: Clean up tmp

@@ -5,7 +5,7 @@
 
 - hosts: compute
   vars:
-    test_name: compute
+    test_name: compute_sync
 
   tasks:
   - name: Get info about test run
@@ -28,4 +28,22 @@
     loop:
     - pgbench.log
     - pgbench_init.log
+    - postgresql.conf
     - info.txt
+
+  - name: Download disk_test.log
+    fetch:
+      src: /var/db/postgres/disk_test.log
+      dest: ./disk_test.log
+      flat: yes
+    become: yes
+
+- hosts: safekeepers
+  
+  tasks:
+  - name: Fetch disk_test.log
+    fetch:
+      src: "{{ main_dir }}/disk_test.log"
+      dest: "./disk_test_{{ private_ip }}.log"
+      flat: yes
+    become: yes

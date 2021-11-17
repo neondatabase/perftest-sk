@@ -4,7 +4,7 @@ set -eux
 # create graph.png
 python graph.py
 
-cat <<EOF > report.md
+cat <<EOF > bench_report.md
 Info about the run:
 \`\`\`
 $(cat info.txt)
@@ -20,9 +20,9 @@ Pgbench result:
 $(cat pgbench.log | tail -n 12)
 \`\`\`
 EOF
-cat report.md
+cat bench_report.md
 
-GIST=$(gh gist create report.md)
+GIST=$(gh gist create bench_report.md postgresql.conf disk_test*.log)
 GIST_HASH=${GIST##*/}
 
 rm -rf gist
@@ -33,6 +33,7 @@ git add graph.png
 git commit -m "Add graph.png"
 git push origin master
 cd ..
+rm *.log
 
 
 echo "Report: " $GIST

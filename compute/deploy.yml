@@ -66,6 +66,8 @@
     group: postgres
     mode: '0644'
   become: true
+  tags:
+  - compute_sync
 
 - name: Create pg_hba.conf for syncrepl compute
   copy:
@@ -75,6 +77,8 @@
     group: postgres
     mode: '0644'
   become: true
+  tags:
+  - compute_sync
 
 - name: Create benchmark scripts
   copy:
@@ -105,7 +109,11 @@
     PGUSER: zenith_admin
     PGDATABASE: postgres
   become: true
+  tags:
+  - compute_sync
 
 - name: Change permissions for basebackup
   ansible.builtin.shell: |
     sudo chown -R $USER:$USER /tmp/basebackup_sync
+  tags:
+  - compute_sync

@@ -1,5 +1,6 @@
 info.txt
 pgbench*.log
 graph.png
-report.md
+bench_report.md
 gist
+postgresql.conf

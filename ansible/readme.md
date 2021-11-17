@@ -39,14 +39,3 @@ tmux attach -t bench
 
 tmux kill-session -t bench
 ```
-
-## Create report
-
-```
-cd results
-ansible-playbook -i ../zenith/inventory/aws \
-    --private-key ../zenith/perftest.pem \
-    -v ./report.yml
-
-./create_report.sh
-```

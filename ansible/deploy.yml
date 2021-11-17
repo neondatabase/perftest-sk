@@ -14,9 +14,13 @@
   # Install dependencies and zenith binaries
   - name: Import common install tasks
     import_tasks: ../common/install.yml
+    tags:
+    - install
 
   - name: Import disk benchmark tasks
     import_tasks: ../common/disk_benchmark.yml
+    tags:
+    - diskperf
 
 - hosts: compute
   vars:

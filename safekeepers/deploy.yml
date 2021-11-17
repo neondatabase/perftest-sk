@@ -106,12 +106,16 @@
     dest: "/tmp/replica_sync/"
     mode: push
   delegate_to: "{{groups['compute'][0]}}"
+  tags:
+  - compute_sync
 
 # Create postgres user
 - group:
     name: postgres
     state: present
   become: true
+  tags:
+  - compute_sync
 
 - user:
     name: postgres
@@ -121,6 +125,8 @@
     state: present
     home: /storage
   become: true
+  tags:
+  - compute_sync
 
 - name: Increase open files
   lineinfile:
@@ -129,6 +135,8 @@
     state: present
     create: yes
   become: true
+  tags:
+  - compute_sync
 
 - name: Create pgdata directory
   ansible.builtin.shell: |
@@ -136,6 +144,8 @@
   become: true
   args:
     creates: /storage/replica_sync/
+  tags:
+  - compute_sync
 
 - name: Fix pgdata permissions
   file:
@@ -146,6 +156,8 @@
     mode: 0750
     recurse: true
   become: true
+  tags:
+  - compute_sync
 
 - name: Create config for syncrepl replica
   ansible.builtin.template:
@@ -155,6 +167,8 @@
     group: postgres
     mode: '0644'
   become: true
+  tags:
+  - compute_sync
 
 - name: Create standby.signal
   ansible.builtin.file:
@@ -164,3 +178,5 @@
     owner: postgres
     group: postgres
   become: true
+  tags:
+  - compute_sync
