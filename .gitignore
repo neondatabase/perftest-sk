@@ -1,6 +1,14 @@
 env.sh
 .s3cfg
 
+zenith_install
+zenith_install.tar.gz
+postgres_install.tar.gz
+perftest.pem
+perftest.pem.pub
+*.log
+.vagrant
+
 ### Terraform ###
 # Local .terraform directories
 **/.terraform/*

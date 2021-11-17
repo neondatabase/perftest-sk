@@ -1,0 +1,18 @@
+- name: Copy disk_test.sh script
+  copy:
+    src: ./disk_test.sh
+    dest: "{{ main_dir }}/disk_test.sh"
+    mode: '0755'
+  tags:
+  - diskperf
+  become: true
+
+- name: Disk performance tests
+  shell: |
+    ./disk_test.sh 2>&1 > disk_test.log
+  args:
+    chdir: "{{ main_dir }}"
+    creates: "{{ main_dir }}/disk_test.log"
+  tags:
+  - diskperf
+  become: true

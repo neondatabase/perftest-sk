@@ -39,11 +39,6 @@
     home: /storage/safekeeper
   become: true
 
-- name: Prune safekeeper data
-  ansible.builtin.shell: "rm -rf /storage/safekeeper"
-  become: true
-  when: prune_data
-
 - name: Create safekeeper data directory
   ansible.builtin.file:
     path: /storage/safekeeper/data
@@ -85,6 +80,8 @@
       KillMode=mixed
       KillSignal=SIGINT
       Restart=on-failure
+      StandardOutput=null
+      StandardError=null
       TimeoutSec=0
 
       [Install]

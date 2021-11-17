@@ -1,0 +1,34 @@
+#
+# Deploy binaries and all other stuff useful for running performance tests on real-like deployments
+#
+---
+
+# Common tasks for both safekeepers and compute, such as downloading binaries and installing dependencies
+- hosts: all
+  vars:
+    # If this is true, binaries will be downloaded from the latest stable docker build.
+    # If this is false, binaries will be copied from current machine.
+    use_docker: true
+
+  tasks:
+  # Install dependencies and zenith binaries
+  - name: Import common install tasks
+    import_tasks: ../common/install.yml
+
+  - name: Import disk benchmark tasks
+    import_tasks: ../common/disk_benchmark.yml
+
+- hosts: compute
+  vars:
+    pg_base: /var/db/postgres/
+
+  tasks:
+  - name: Import compute tasks
+    import_tasks: ../compute/deploy.yml
+
+
+- hosts: safekeepers
+
+  tasks:
+  - name: Import safekeepers tasks
+    import_tasks: ../safekeepers/deploy.yml
