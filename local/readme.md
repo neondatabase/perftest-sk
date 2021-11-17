@@ -21,15 +21,12 @@ ssh vagrant@192.168.56.200
 ## Run deploy locally
 
 ```bash
-# Base directory for all deploys
-cd zenith
-
-# Download latest zenith binaries
-./get_binaries.sh
+# Optional: download latest zenith binaries, 
+cd common && ./get_binaries.sh
 
 # Deploy safekeepers and compute
-ansible-playbook \
-    -i inventory/vagrant \
+cd ansible && ansible-playbook \
+    -i ../inventory/vagrant \
     --skip-tags aws-specific \
     -v deploy.yml
     # '-l compute' can be used to run scripts for compute only
@@ -40,11 +37,6 @@ To test safekeepers work:
 ```bash
 # curl on HTTP port
 curl 192.168.56.200:7676/metrics
-```
-
-To bind prometheus on localhost:8080:
-```bash
-ssh -L 8080:192.168.56.210:8080 vagrant@192.168.56.210
 ```
 
 ## Clean up

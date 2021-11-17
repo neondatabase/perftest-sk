@@ -5,9 +5,9 @@ ansible_user=vagrant
 ansible_user=vagrant
 
 [safekeepers]
-192.168.56.200 private_ip=192.168.56.200
-192.168.56.201 private_ip=192.168.56.201
-192.168.56.202 private_ip=192.168.56.202
+192.168.56.200 private_ip=192.168.56.200 main_dir=/storage
+192.168.56.201 private_ip=192.168.56.201 main_dir=/storage
+192.168.56.202 private_ip=192.168.56.202 main_dir=/storage
 
 [compute]
-192.168.56.210 private_ip=192.168.56.210
+192.168.56.210 private_ip=192.168.56.210 main_dir=/var/db/postgres

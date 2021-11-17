@@ -1,4 +1,14 @@
-# AWS deploy
+# Ansible scripts
+
+Content:
+- deploy.yml - install all dependencies, zenith binaries, run disk performance tests, init postgres base dirs for different tests, create safekeeper services
+- bench_safekeepers.yml - run pgbench on 1xCompute+3xSafekeeper scheme
+- bench_syncreplica.yml - run pgbench on 1xPostgres+3xQuorumSyncReplica
+- bench_local.yml - run pgbench on 1xPostgres with default config
+- cleanup.yml - remove all files produced by the tests
+
+
+## Deploy
 
 Run deploy:
 
@@ -7,35 +17,12 @@ Run deploy:
 ansible-playbook -i ../inventory/aws -v deploy.yml
 ```
 
-# Benchmarks
+To copy binaries from current machine, set `use_docker` to `false` in `deploy.yml`. It will copy them from `../common/zenith_install.tar.gz`.
 
-## Test postgres without replication
+## Other scripts
 
-Run on compute:
-```
-sudo su postgres
-cd ~/compute_local/
-
-export PGDATA=$(pwd)
-export PGUSER=zenith_admin
-export PGDATABASE=postgres
-pg_ctl start -w -l pg.log
-pgbench -i -s 40   2>&1 | tee -a pgbench_init.log
-pgbench -c 32 -P 1 -T 60   2>&1 | tee -a pgbench.log
-pg_ctl stop
-```
-
-## Run pgbench
+To run other script:
 
 ```bash
-sudo su postgres
-cd ~/compute
-
-tmux new-session -d -s bench bash \
-    && tmux split-window -h -t bench bash \
-    && tmux send -t bench:0.0 "./run_benchmark.sh" C-m
-
-tmux attach -t bench
-
-tmux kill-session -t bench
+ansible-playbook -i ../inventory/aws -v <script>.yml
 ```
