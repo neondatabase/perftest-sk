@@ -17,11 +17,34 @@
     tags:
     - install
 
-  - name: Import disk benchmark tasks
+# Create working directory
+- hosts: compute
+
+  tasks:
+  - name: Prepare storage
+    import_tasks: ../compute/storage.yml
+    tags:
+    - storage
+
+# Create working directory
+- hosts: safekeepers
+
+  tasks:
+  - name: Prepare storage
+    import_tasks: ../safekeepers/storage.yml
+    tags:
+    - storage
+
+# Test disk performance
+- hosts: all
+
+  tasks:
+  - name: Test disk perf
     import_tasks: ../common/disk_benchmark.yml
     tags:
     - diskperf
 
+# Deploy test environment
 - hosts: compute
   vars:
     pg_base: /var/db/postgres/
@@ -30,7 +53,7 @@
   - name: Import compute tasks
     import_tasks: ../compute/deploy.yml
 
-
+# Deploy test environment
 - hosts: safekeepers
 
   tasks:

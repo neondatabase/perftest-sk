@@ -1,0 +1,32 @@
+- group:
+    name: postgres
+    state: present
+  become: true
+
+- user:
+    name: postgres
+    groups: postgres
+    shell: /bin/bash
+    append: yes
+    state: present
+    home: /var/db/postgres
+  become: true
+
+- name: Increase open files
+  lineinfile:
+    dest: /etc/security/limits.d/cluster.conf
+    line: "postgres  soft  nofile  65535"
+    state: present
+    create: yes
+  become: true
+
+# Create several pgdata directories for different scenarios
+- name: Create postgres directories structure
+  file:
+    path: "{{ main_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0750
+    recurse: true
+  become: true

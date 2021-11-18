@@ -7,5 +7,5 @@ export PGDATABASE=postgres
 
 time pgbench -i -s 400   2>&1 | tee -a pgbench_init.log
 
-pgbench -c 32 -P 1 -T 3600   2>&1 | tee -a pgbench.log
+pgbench -c 32 -j 2 -N -P 1 -T 3600   2>&1 | tee -a pgbench.log
 
