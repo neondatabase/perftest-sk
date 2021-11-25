@@ -19,6 +19,15 @@
       chdir: "/var/db/postgres/{{ test_name }}"
     become: yes
 
+  - name: Extract info from pg.log
+    shell: |
+      cat pg.log | grep -v "sending message" > short.log
+      grep "sending message" pg.log | awk '{print $9}' > sizes.log
+    args:
+      chdir: "{{ main_dir }}/{{ test_name }}"
+      creates: "{{ main_dir }}/{{ test_name }}/sizes.log"
+    become: true
+
   - name: Download files
     fetch:
       src: /var/db/postgres/{{ test_name }}/{{ item }}
@@ -30,13 +39,18 @@
     - pgbench_init.log
     - postgresql.conf
     - info.txt
+    - short.log
+    - sizes.log
 
-  - name: Download disk_test.log
+  - name: Download common logs
     fetch:
-      src: /var/db/postgres/disk_test.log
-      dest: ./disk_test.log
+      src: /var/db/postgres/{{ item }}
+      dest: ./{{ item }}
       flat: yes
     become: yes
+    loop:
+    - disk_test.log
+    - ping_test.log
 
 - hosts: safekeepers
   

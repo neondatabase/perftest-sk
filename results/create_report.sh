@@ -19,10 +19,25 @@ Pgbench result:
 \`\`\`
 $(cat pgbench.log | tail -n 12)
 \`\`\`
+
+walproposer messages stats:
+\`\`\`
+Total sent messages (to all 3 safekeepers):
+$(wc -l sizes.log)
+
+Zero-length messages (all safekeepers):
+$(grep -Fx "0" sizes.log | wc -l)
+
+Length sum of all messages:
+$(awk '{ sum += $1 } END { print sum }' sizes.log)
+
+Average message size of non-zero length messages:
+$(grep -v -Fx "0" sizes.log | awk '{ sum += $1; n++ } END { print sum / n; }')
+\`\`\`
 EOF
 cat bench_report.md
 
-GIST=$(gh gist create bench_report.md postgresql.conf disk_test*.log)
+GIST=$(gh gist create bench_report.md postgresql.conf disk_test*.log ping_test.log short.log)
 GIST_HASH=${GIST##*/}
 
 rm -rf gist
@@ -33,7 +48,7 @@ git add graph.png
 git commit -m "Add graph.png"
 git push origin master
 cd ..
-rm *.log
+rm disk_test_*.log
 
 
 echo "Report: " $GIST

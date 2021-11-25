@@ -11,6 +11,14 @@
 
 `compute_sync` is set up for synchronous replication. It creates config from `postgresql-main.conf.j2`. After that basebackup is copied to safekeeper nodes, which set up standby for streaming replication.
 
+## common psql environment
+
+```
+export PGDATA=$(pwd)
+export PGUSER=zenith_admin
+export PGDATABASE=postgres
+```
+
 ## run benchmark manually
 
 ```bash
@@ -28,18 +36,9 @@ pg_ctl stop -w
 ## parse stats from pg.log
 
 ```bash
-grep "sending message" pg.log > send.log
-awk '{print $9}' send.log > sizes.log
+grep "sending message" pg.log | awk '{print $9}' > sizes.log
 
 echo 'Total append messages (to all 3 safekeepers):' && wc -l send.log
 echo 'Zero-length messages (all safekeepers):' && grep "len 0" send.log | wc -l
 # grep -Fx "0" sizes.log | wc -l
-```
-
-## common psql environment
-
-```
-export PGDATA=$(pwd)
-export PGUSER=zenith_admin
-export PGDATABASE=postgres
 ```
