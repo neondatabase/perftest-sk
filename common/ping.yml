@@ -1,0 +1,22 @@
+- name: Create script to measure ping latency
+  copy:
+    dest: "{{ main_dir }}/ping_test.sh"
+    mode: '0755'
+    content: |
+      {% for host in groups['safekeepers'] %}
+        ping -c 10 {{ hostvars[host].private_ip }}
+      {% endfor %}
+  tags:
+  - ping
+  become: true
+
+- name: Run ping script
+  shell: |
+    ./ping_test.sh 2>&1 > ping_test.log
+    cat ping_test.log
+  args:
+    chdir: "{{ main_dir }}"
+    creates: "{{ main_dir }}/ping_test.log"
+  tags:
+  - ping
+  become: true

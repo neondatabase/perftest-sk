@@ -17,6 +17,17 @@ Run deploy:
 ansible-playbook -i ../inventory/aws -v deploy.yml
 ```
 
+Deploy&run, but only safekeepers setups:
+```bash
+# Deploy safekeepers and compute, including configs for different benchmarks
+ansible-playbook -i ../inventory/aws --skip-tags compute_sync -v deploy.yml && ansible-playbook -i ../inventory/aws -v bench_safekeepers.yml
+```
+
+Re-run test:
+```bash
+ansible-playbook -i ../inventory/aws -v cleanup.yml && ansible-playbook -i ../inventory/aws -v deploy.yml --skip-tags compute_sync,diskperf,install,storage && ansible-playbook -i ../inventory/aws -v bench_safekeepers.yml
+```
+
 To copy binaries from current machine, set `use_docker` to `false` in `deploy.yml`. It will copy them from `../common/zenith_install.tar.gz`.
 
 ## Other scripts

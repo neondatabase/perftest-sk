@@ -26,6 +26,11 @@
     tags:
     - storage
 
+  - name: Test ping
+    import_tasks: ../common/ping.yml
+    tags:
+    - ping
+
 # Create working directory
 - hosts: safekeepers
 
@@ -35,7 +40,7 @@
     tags:
     - storage
 
-# Test disk performance
+# Test instances performance
 - hosts: all
 
   tasks:

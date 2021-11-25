@@ -33,7 +33,7 @@
 
   - name: Start postgres for compute
     ansible.builtin.shell: |
-      runuser -u postgres -- pg_ctl start -w > /dev/null
+      runuser -u postgres -- pg_ctl start -w -l pg.log
     args:
       chdir: "{{ main_dir }}/compute"
     environment:
@@ -58,3 +58,5 @@
       PGUSER: zenith_admin
       PGDATABASE: postgres
     become: true
+    # TODO: become_user don't work, need some other way to run scripts from postgres user
+    # become_user: postgres
