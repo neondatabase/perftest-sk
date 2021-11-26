@@ -28,6 +28,11 @@ Re-run test:
 ansible-playbook -i ../inventory/aws -v cleanup.yml && ansible-playbook -i ../inventory/aws -v deploy.yml --skip-tags compute_sync,diskperf,install,storage,ping && ansible-playbook -i ../inventory/aws -v bench_safekeepers.yml
 ```
 
+Re-run compute_sync:
+```bash
+ansible-playbook -i ../inventory/aws -v cleanup.yml && ansible-playbook -i ../inventory/aws -v deploy.yml --skip-tags diskperf,install,storage,ping && ansible-playbook -i ../inventory/aws -v bench_syncreplica.yml
+```
+
 To copy binaries from current machine, set `use_docker` to `false` in `deploy.yml`. It will copy them from `../common/zenith_install.tar.gz`.
 
 ## Other scripts

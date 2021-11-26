@@ -25,7 +25,7 @@
   tasks:
   - name: Start postgres for compute_sync
     ansible.builtin.shell: |
-      runuser -u postgres -- pg_ctl start -w > /dev/null
+      runuser -u postgres -- pg_ctl start -w -l pg.log
     args:
       chdir: "/var/db/postgres/compute_sync"
     environment:
@@ -39,7 +39,7 @@
   tasks:
   - name: Start postgres for replica_sync
     ansible.builtin.shell: |
-      runuser -u postgres -- pg_ctl start -w > /dev/null
+      runuser -u postgres -- pg_ctl start -w -l pg.log
     args:
       chdir: "/storage/replica_sync"
     environment:
