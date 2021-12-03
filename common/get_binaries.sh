@@ -6,7 +6,7 @@ set -eux
 # zenithdb/zenith:latest Docker image.
 #
 
-export DOCKER_IMAGE=zenithdb/zenith:latest
+export DOCKER_IMAGE=arthurwow/zenith:latest
 
 rm -rf zenith_install
 mkdir zenith_install

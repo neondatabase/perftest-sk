@@ -24,3 +24,10 @@ export PGDATA=$(pwd)
 export PGUSER=zenith_admin
 export PGDATABASE=postgres
 ```
+
+## build zenith docker image
+```
+cd ./zenith
+docker build --build-arg GIT_VERSION=$(git rev-parse HEAD) -t arthurwow/zenith:latest .
+docker push arthurwow/zenith:latest
+```

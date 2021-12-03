@@ -12,6 +12,11 @@ provider "aws" {
   region = "us-east-1"
 }
 
+resource "aws_placement_group" "perfgroup" {
+  name     = "perftest-group"
+  strategy = "cluster"
+}
+
 resource "aws_instance" "safekeepers" {
   count = 3
   tags = {
@@ -27,6 +32,7 @@ resource "aws_instance" "safekeepers" {
   subnet_id                   = "subnet-07e498251a08efe65"
   monitoring                  = false
   associate_public_ip_address = true
+  placement_group             = aws_placement_group.perfgroup.id
 
   root_block_device {
     volume_size = "50"
@@ -47,6 +53,7 @@ resource "aws_instance" "compute" {
   subnet_id                   = "subnet-07e498251a08efe65"
   monitoring                  = false
   associate_public_ip_address = true
+  placement_group             = aws_placement_group.perfgroup.id
 
   root_block_device {
     volume_size = "300"
