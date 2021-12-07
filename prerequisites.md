@@ -42,11 +42,33 @@ sudo apt update
 sudo apt install gh
 gh auth login
 
+sudo apt install python3-pip
+pip install pipenv
+
 git clone git@github.com:petuhovskiy/zenith-perftest.git
 cd zenith-perftest
+pipenv install
+pipenv shell
 
-# TODO
+pip install ansible
+ansible-galaxy collection install ansible.posix
 
-apt install python3-pip
-pip install pipenv
+sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo apt-get update && sudo apt-get install terraform
+
+cat > env.sh
+chmod +x ./env.sh
+
+cd keys
+cat > perftest.pem
+chmod 0600 perftest.pem
+cd ..
+
+cd terraform
+terraform init
+
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
 ```

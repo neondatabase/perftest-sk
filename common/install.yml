@@ -61,6 +61,10 @@
   become: true
   when: use_docker
 
+- name: Gather facts
+  ansible.builtin.setup:
+    gather_timeout: 30
+
 # Fetch binaries from dockerhub, if that's faster than copying archive
 - name: Copy binaries script
   copy:

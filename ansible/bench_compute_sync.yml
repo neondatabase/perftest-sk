@@ -57,7 +57,7 @@
 
       tmux new-session -d -s bench bash \
         && tmux split-window -h -t bench bash \
-        && tmux send -t bench:0.0 "./run_benchmark.sh" C-m
+        && tmux send -t bench:0.0 "CONNECTIONS_COUNT={{ connections_count }} ./run_benchmark.sh" C-m
 
       sleep 5 && cat pgbench_init.log
     args:
