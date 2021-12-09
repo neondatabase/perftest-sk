@@ -33,9 +33,16 @@ $(awk '{ sum += $1 } END { print sum }' sizes.log)
 
 Average message size of non-zero length messages:
 $(grep -v -Fx "0" sizes.log | awk '{ sum += $1; n++ } END { print sum / n; }')
+
+Average message sizes in blocks of 50k messages:
+$(python ./avg_100k.py)
 \`\`\`
 EOF
 cat bench_report.md
+
+# Append something if file is empty.
+[ -s short.log ] || echo 'Empty file' >> short.log
+
 
 GIST=$(gh gist create bench_report.md postgresql.conf disk_test*.log ping_test.log short.log)
 GIST_HASH=${GIST##*/}
