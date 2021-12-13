@@ -30,3 +30,22 @@
     mode: 0750
     recurse: true
   become: true
+
+- name: Create a ext4 filesystem on nvme volume
+  community.general.filesystem:
+    fstype: ext4
+    dev: /dev/nvme0n1
+  tags:
+  - aws-specific
+  become: true
+
+- name: Mount nvme storage
+  ansible.posix.mount:
+    path: "{{ main_dir }}"
+    src: /dev/nvme0n1
+    fstype: ext4
+    boot: yes
+    state: mounted
+  tags:
+  - aws-specific
+  become: true

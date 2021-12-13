@@ -48,7 +48,7 @@ resource "aws_instance" "compute" {
   }
 
   ami                         = "ami-05ad4ed7f9c48178b" #debian-10-amd64-20210721-710
-  instance_type               = "c5.2xlarge"
+  instance_type               = "c5d.2xlarge"
   key_name                    = "perftest"
   subnet_id                   = "subnet-07e498251a08efe65"
   monitoring                  = false
@@ -56,7 +56,7 @@ resource "aws_instance" "compute" {
   placement_group             = aws_placement_group.perfgroup.id
 
   root_block_device {
-    volume_size = "300"
+    volume_size = "50"
   }
 }
 

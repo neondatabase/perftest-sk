@@ -47,6 +47,17 @@
   tags:
   - compute_sync
 
+- name: Create compute config for local compute
+  ansible.builtin.template:
+    src: ./postgresql-local.conf.j2
+    dest: "{{ pg_base }}/compute_local/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  become: true
+  tags:
+  - compute_sync
+
 - name: Create pg_hba.conf for syncrepl compute
   copy:
     src: ./pg_hba_trust.conf

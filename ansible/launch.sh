@@ -19,7 +19,7 @@ collect_results() {
     echo "Collecting results for test $1"
     cd ../results
     ansible-playbook -i ../inventory/aws -v ./report.yml --extra-vars "test_name=$1"
-    ./create_report.sh >> uploaded_reports.txt
+    ./create_report.sh
     cd ../ansible
 }
 
@@ -43,5 +43,11 @@ run_tests() {
     done
 }
 
-run_tests compute
-run_tests compute_sync
+# run_tests compute
+# run_tests compute_sync
+# run_tests compute_local
+
+run_test compute_sync 32
+run_test compute 32
+# run_test compute_local 32
+# run_test compute_sync 32
