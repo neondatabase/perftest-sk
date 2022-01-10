@@ -20,7 +20,7 @@
   - name: Extract info from pg.log
     shell: |
       cat pg.log | grep -v "sending message" | grep -v "START_REPLICATION SLOT" > short.log
-      grep "sending message" pg.log | awk '{print $10}' > sizes.log
+      grep "sending message" pg.log | awk '{print $9}' > sizes.log
     args:
       chdir: "{{ main_dir }}/{{ test_name }}"
       creates: "{{ main_dir }}/{{ test_name }}/sizes.log"

@@ -38,16 +38,16 @@ run_test() {
 
 run_tests() {
     echo "Running tests in directory $1"
-    for conns in {1,2,4,8,32}; do
+    for conns in {1,8,32,32}; do
         run_test $1 $conns
     done
 }
 
-# run_tests compute
-# run_tests compute_sync
+run_tests compute
+run_tests compute_sync
 # run_tests compute_local
 
-run_test compute_sync 32
-run_test compute 32
+# run_test compute_sync 32
+# run_test compute 32
 # run_test compute_local 32
 # run_test compute_sync 32

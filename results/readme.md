@@ -9,3 +9,10 @@ ansible-playbook -i ../inventory/aws -v ./report.yml
 # Upload results to GitHub Gist
 ./create_report.sh
 ```
+
+## List reports from github
+
+```bash
+cd scripts
+./parse_gists.sh | sort
+```
