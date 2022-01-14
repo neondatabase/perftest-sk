@@ -38,7 +38,7 @@ run_test() {
 
 run_tests() {
     echo "Running tests in directory $1"
-    for conns in {1,8,32,32}; do
+    for conns in {32,32,8,1}; do
         run_test $1 $conns
     done
 }

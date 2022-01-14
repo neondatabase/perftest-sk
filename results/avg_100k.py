@@ -16,6 +16,8 @@ with open('sizes.log') as f:
       if not line:
         break
       cur = int(line)
+      if cur == 0:
+        continue
       cursum += cur
       curcnt += 1
       i += 1
