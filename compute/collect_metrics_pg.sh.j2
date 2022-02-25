@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This script is for collecting pg metrics via psql
+
+RUN_STAGE=$1
+
+for addr in {% for host in groups['safekeepers'] %} "{{ hostvars[host].private_ip }}"{% endfor %}; do
+    echo >> metrics_$addr.txt
+    echo "===================================== $RUN_STAGE =====================================" >> metrics_$addr.txt
+    
+    psql -U zenith_admin -d postgres -h $addr -p 5432 -c "SELECT * FROM pg_stat_wal" >> metrics_$addr.txt
+    psql -U zenith_admin -d postgres -h $addr -p 5432 -c "select pg_last_wal_receive_lsn()" >> metrics_$addr.txt
+done

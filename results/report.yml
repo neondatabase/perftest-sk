@@ -19,11 +19,10 @@
 
   - name: Extract info from pg.log
     shell: |
-      cat pg.log | grep -v "sending message" | grep -v "START_REPLICATION SLOT" > short.log
-      grep "sending message" pg.log | awk '{print $9}' > sizes.log
+      cat pg.log | grep -v "sending message" | grep -v "START_REPLICATION SLOT" | grep -v "replyTime" | grep -v "reply_time" | grep -v "procs up to flush" | grep -v "ProcessStandbyReplyMessage:" > short.log
     args:
       chdir: "{{ main_dir }}/{{ test_name }}"
-      creates: "{{ main_dir }}/{{ test_name }}/sizes.log"
+      creates: "{{ main_dir }}/{{ test_name }}/short.log"
     become: true
 
   - name: Download files
@@ -38,7 +37,16 @@
     - postgresql.conf
     - info.txt
     - short.log
-    - sizes.log
+
+  - name: Download metric files
+    synchronize:
+      mode: pull
+      src: /var/db/postgres/{{ test_name }}/
+      dest: ./
+      rsync_opts:
+      - "--include=metrics_*.txt"
+      - "--exclude='*'"
+    become: yes
 
   - name: Download common logs
     synchronize:

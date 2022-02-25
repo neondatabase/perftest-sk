@@ -15,19 +15,19 @@ Specific directories:
 - [safekeepers](./safekeepers/readme.md) - safekeepers scripts and files
 
 
+## Where to start
+
+1. Clone this repo or get access to EC2 instance with everything already prepared
+2. Read prerequisites
+3. Run terraform scripts to deploy instances for tests
+4. Go to ansible directory and run scripts to deploy binaries
+5. Run ./launch.sh in ansible directory to run tests automatically
+
 # Misc
 
-## common psql environment
-
-```
-export PGDATA=$(pwd)
-export PGUSER=zenith_admin
-export PGDATABASE=postgres
-```
-
-## build zenith docker image
+## How to build zenith docker image
 ```
 cd ./zenith
-docker build --build-arg GIT_VERSION=$(git rev-parse HEAD) -t arthurwow/zenith:latest .
-docker push arthurwow/zenith:latest
+export TAG=your-repo/zenith:your-tag
+sudo docker build --build-arg GIT_VERSION=$(git rev-parse HEAD) -t $TAG . && sudo docker push $TAG
 ```

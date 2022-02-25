@@ -82,6 +82,28 @@
   - compute_local
   - compute_sync
 
+- name: Create metrics scripts for safekeepers
+  ansible.builtin.template:
+    src: ./collect_metrics.sh.j2
+    dest: "{{ pg_base }}/{{ item }}/collect_metrics.sh"
+    owner: postgres
+    group: postgres
+    mode: '0755'
+  become: true
+  loop:
+  - compute
+
+- name: Create metrics scripts for postgres
+  ansible.builtin.template:
+    src: ./collect_metrics_pg.sh.j2
+    dest: "{{ pg_base }}/{{ item }}/collect_metrics.sh"
+    owner: postgres
+    group: postgres
+    mode: '0755'
+  become: true
+  loop:
+  - compute_sync
+
 - name: Create basebackup for compute_sync
   ansible.builtin.shell: |
     runuser -u postgres -- pg_ctl start -w

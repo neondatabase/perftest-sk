@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# This script is for collecting safekeeper metrics via HTTP
+
+RUN_STAGE=$1
+
+for addr in {% for host in groups['safekeepers'] %} "{{ hostvars[host].private_ip }}"{% endfor %}; do
+    echo >> metrics_$addr.txt
+    echo "===================================== $RUN_STAGE =====================================" >> metrics_$addr.txt
+    curl "$addr:7676/metrics" >> metrics_$addr.txt
+done
