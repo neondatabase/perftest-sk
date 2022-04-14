@@ -6,7 +6,7 @@ set -eux
 # zenithdb/zenith:latest Docker image.
 #
 
-# export DOCKER_IMAGE=arthurwow/zenith:lazy-wp
+# export DOCKER_IMAGE=arthurwow/zenith:fdatasync
 export DOCKER_IMAGE=zenithdb/zenith:latest
 
 rm -rf zenith_install

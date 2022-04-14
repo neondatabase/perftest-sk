@@ -8,7 +8,7 @@ ansible_user=admin
 ansible_user=admin
 
 [safekeepers]
-$(terraform output -raw safekeepers_ips | awk 'NF{print $0 " main_dir=/storage"}')
+$(terraform output -raw safekeepers_ips | awk 'NF{print $0 " main_dir=/storage sk_id=" NR}')
 
 [compute]
 $(terraform output -raw compute_ips | awk 'NF{print $0 " main_dir=/var/db/postgres"}')

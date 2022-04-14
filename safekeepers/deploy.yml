@@ -49,7 +49,7 @@
       Type=simple
       User=safekeeper
       Environment=RUST_BACKTRACE=1 ZENITH_REPO_DIR=/storage/safekeeper/data LD_LIBRARY_PATH=/usr/local/lib
-      ExecStart=/usr/local/bin/safekeeper -l {{ private_ip }}:6500 --listen-http {{ private_ip }}:7676 -D /storage/safekeeper/data
+      ExecStart=/usr/local/bin/safekeeper --id {{ sk_id }} -l {{ private_ip }}:6500 --listen-http {{ private_ip }}:7676 -D /storage/safekeeper/data
       ExecReload=/bin/kill -HUP $MAINPID
       KillMode=mixed
       KillSignal=SIGINT
